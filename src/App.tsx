@@ -133,7 +133,7 @@ function ResumeDocument({ data, template, scale = 1 }: { data: ResumeData; templ
     }
 
     return (
-        <div style={containerStyle}>
+        <div className="resume-print-document" style={containerStyle}>
             <div style={headerStyle}>
                 <h1 style={{ margin: `0 0 ${8 * scale}px`, fontSize: `${(template === 'Modern' ? 36 : 30) * scale}px`, letterSpacing: template === 'Modern' ? '-1px' : '1px', fontWeight: template === 'Modern' ? 'bold' : 'normal', textTransform: template === 'Classic' ? 'uppercase' : 'none' }}>
                     {data.personal.name || 'Your Name'}
@@ -157,7 +157,7 @@ function ResumeDocument({ data, template, scale = 1 }: { data: ResumeData; templ
                 <section style={{ marginBottom: `${24 * scale}px` }}>
                     <h2 style={sectionTitleStyle}>Experience</h2>
                     {data.experience.map(exp => (
-                        <div key={exp.id} style={{ marginBottom: `${16 * scale}px` }}>
+                        <div key={exp.id} className="resume-item" style={{ marginBottom: `${16 * scale}px` }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}>
                                 <span>{exp.company}</span>
                                 <span>{exp.duration}</span>
@@ -173,7 +173,7 @@ function ResumeDocument({ data, template, scale = 1 }: { data: ResumeData; templ
                 <section style={{ marginBottom: `${24 * scale}px` }}>
                     <h2 style={sectionTitleStyle}>Projects</h2>
                     {data.projects.map(proj => (
-                        <div key={proj.id} style={{ marginBottom: `${16 * scale}px` }}>
+                        <div key={proj.id} className="resume-item" style={{ marginBottom: `${16 * scale}px` }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}>
                                 <span>{proj.name}</span>
                                 <span>{proj.link}</span>
@@ -188,7 +188,7 @@ function ResumeDocument({ data, template, scale = 1 }: { data: ResumeData; templ
                 <section style={{ marginBottom: `${24 * scale}px` }}>
                     <h2 style={sectionTitleStyle}>Education</h2>
                     {data.education.map(edu => (
-                        <div key={edu.id} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: `${6 * scale}px` }}>
+                        <div key={edu.id} className="resume-item" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: `${6 * scale}px` }}>
                             <span><strong style={{ fontWeight: 'bold' }}>{edu.school}</strong>{edu.degree ? ` — ${edu.degree}` : ''}</span>
                             <span>{edu.year}</span>
                         </div>
@@ -493,12 +493,92 @@ function Builder({ data, update, template, setTemplate }: { data: ResumeData; up
 }
 
 function Preview({ data, template, setTemplate }: { data: ResumeData; template: TemplateType; setTemplate: (t: TemplateType) => void }) {
+    const handleCopyText = () => {
+        let text = `${data.personal.name}\n`
+        const contactParts = []
+        if (data.personal.email) contactParts.push(data.personal.email)
+        if (data.personal.phone) contactParts.push(data.personal.phone)
+        if (data.personal.location) contactParts.push(data.personal.location)
+        if (contactParts.length) text += `${contactParts.join(' | ')}\n`
+        text += `\n`
+
+        if (data.summary) {
+            text += `SUMMARY\n${data.summary}\n\n`
+        }
+
+        if (data.education.length > 0) {
+            text += `EDUCATION\n`
+            data.education.forEach(edu => {
+                text += `${edu.school}`
+                if (edu.degree) text += ` - ${edu.degree}`
+                if (edu.year) text += ` (${edu.year})`
+                text += `\n`
+            })
+            text += `\n`
+        }
+
+        if (data.experience.length > 0) {
+            text += `EXPERIENCE\n`
+            data.experience.forEach(exp => {
+                const expParts = []
+                if (exp.company) expParts.push(exp.company)
+                if (exp.role) expParts.push(exp.role)
+                if (exp.duration) expParts.push(exp.duration)
+                if (expParts.length) text += `${expParts.join(' | ')}\n`
+                if (exp.desc) text += `${exp.desc}\n`
+                text += `\n`
+            })
+        }
+
+        if (data.projects.length > 0) {
+            text += `PROJECTS\n`
+            data.projects.forEach(proj => {
+                const projParts = []
+                if (proj.name) projParts.push(proj.name)
+                if (proj.link) projParts.push(proj.link)
+                if (projParts.length) text += `${projParts.join(' | ')}\n`
+                if (proj.desc) text += `${proj.desc}\n`
+                text += `\n`
+            })
+        }
+
+        if (data.skills) {
+            text += `SKILLS\n${data.skills}\n\n`
+        }
+
+        const linkParts = []
+        if (data.links.github) linkParts.push(data.links.github)
+        if (data.links.linkedin) linkParts.push(data.links.linkedin)
+        if (linkParts.length) {
+            text += `LINKS\n${linkParts.join(' | ')}\n`
+        }
+
+        navigator.clipboard.writeText(text.trim()).then(() => {
+            alert('Resume copied to clipboard!')
+        })
+    }
+
+    const missingFields = []
+    if (!data.personal.name.trim()) missingFields.push('Name')
+    if (data.experience.length === 0 && data.projects.length === 0) missingFields.push('Experience & Projects')
+
     return (
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-            <div style={{ marginBottom: 'var(--space-3)' }}>
+            <div className="no-print" style={{ marginBottom: 'var(--space-4)' }}>
+                {missingFields.length > 0 && (
+                    <div style={{ marginBottom: 'var(--space-2)', padding: 'var(--space-2)', background: 'color-mix(in srgb, var(--color-bg) 92%, var(--color-warning))', border: '1px solid color-mix(in srgb, var(--color-warning) 50%, transparent)', borderRadius: 'var(--radius)', color: 'var(--color-text)', fontSize: 'var(--text-small)' }}>
+                        <strong>Note:</strong> Your resume may look incomplete. Missing: <em>{missingFields.join(', ')}</em>.
+                    </div>
+                )}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)', marginBottom: 'var(--space-3)' }}>
+                    <Button variant="primary" onClick={() => window.print()}>Print / Save as PDF</Button>
+                    <Button variant="secondary" onClick={handleCopyText}>Copy Resume as Text</Button>
+                </div>
                 <TemplateSelector template={template} setTemplate={setTemplate} />
             </div>
-            <ResumeDocument data={data} template={template} />
+            <div className="resume-print-container">
+                <ResumeDocument data={data} template={template} />
+            </div>
         </div>
     )
 }

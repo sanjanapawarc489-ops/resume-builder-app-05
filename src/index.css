@@ -459,3 +459,64 @@ a:hover {
   outline: none;
   border-color: color-mix(in srgb, var(--color-accent) 65%, var(--color-bg));
 }
+
+/* Print Styles */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  .ds-topBar,
+  .ds-proofFooter,
+  .no-print {
+    display: none !important;
+  }
+
+  .ds-main {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .ds-shell {
+    min-height: auto !important;
+  }
+
+  .ds-container {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: none !important;
+  }
+
+  .resume-print-container {
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  .resume-print-document {
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    color: black !important;
+  }
+
+  /* Page break rules */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  .resume-item {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+}
